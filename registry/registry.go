@@ -133,6 +133,7 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 			ServiceName: service.Name + "." + u.Scheme,
 			GroupName:   r.opts.group,
 			Cluster:     r.opts.cluster,
+			Ephemeral:   true,
 		}); err != nil {
 			return err
 		}
