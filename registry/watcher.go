@@ -27,6 +27,8 @@ type watcher struct {
 func newWatcher(ctx context.Context, cli naming_client.INamingClient, serviceName string, groupName string, clusters []string) (*watcher, error) {
 	w := &watcher{
 		serviceName: serviceName,
+		clusters:    clusters,
+		groupName:   groupName,
 		cli:         cli,
 		watchChan:   make(chan bool, 1),
 	}
