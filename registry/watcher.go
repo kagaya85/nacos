@@ -54,8 +54,8 @@ func (w *watcher) Next() ([]*registry.ServiceInstance, error) {
 		}
 		res, err := w.cli.GetService(vo.GetServiceParam{
 			ServiceName: w.serviceName,
-			GroupName:w.groupName,
-			Clusters:w.clusters,
+			GroupName:   w.groupName,
+			Clusters:    w.clusters,
 		})
 		if err != nil {
 			return nil, err
