@@ -16,6 +16,8 @@ var (
 
 type watcher struct {
 	serviceName string
+	clusters    []string
+	groupName   string
 	ctx         context.Context
 	cancel      context.CancelFunc
 	watchChan   chan bool
@@ -25,6 +27,8 @@ type watcher struct {
 func newWatcher(ctx context.Context, cli naming_client.INamingClient, serviceName string, groupName string, clusters []string) (*watcher, error) {
 	w := &watcher{
 		serviceName: serviceName,
+		clusters:    clusters,
+		groupName:   groupName,
 		cli:         cli,
 		watchChan:   make(chan bool, 1),
 	}
@@ -50,6 +54,8 @@ func (w *watcher) Next() ([]*registry.ServiceInstance, error) {
 		}
 		res, err := w.cli.GetService(vo.GetServiceParam{
 			ServiceName: w.serviceName,
+			GroupName:   w.groupName,
+			Clusters:    w.clusters,
 		})
 		if err != nil {
 			return nil, err

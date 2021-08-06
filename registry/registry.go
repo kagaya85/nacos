@@ -72,6 +72,9 @@ func New(cli naming_client.INamingClient, opts ...Option) (r *Registry) {
 
 // Register the registration.
 func (r *Registry) Register(ctx context.Context, si *registry.ServiceInstance) error {
+	if si.Name == "" {
+		return fmt.Errorf("kratos/nacos: serviceInstance.name cannot is empty.")
+	}
 	for _, endpoint := range si.Endpoints {
 		u, err := url.Parse(endpoint)
 		if err != nil {
@@ -93,7 +96,7 @@ func (r *Registry) Register(ctx context.Context, si *registry.ServiceInstance) e
 		_, e := r.cli.RegisterInstance(vo.RegisterInstanceParam{
 			Ip:          host,
 			Port:        uint64(p),
-			ServiceName: si.Name,
+			ServiceName: si.Name + "." + u.Scheme,
 			Weight:      r.opts.weight,
 			Enable:      true,
 			Healthy:     true,
@@ -127,9 +130,10 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 		if _, err = r.cli.DeregisterInstance(vo.DeregisterInstanceParam{
 			Ip:          host,
 			Port:        uint64(p),
-			ServiceName: service.Name,
+			ServiceName: service.Name + "." + u.Scheme,
 			GroupName:   r.opts.group,
 			Cluster:     r.opts.cluster,
+			Ephemeral:   true,
 		}); err != nil {
 			return err
 		}
@@ -144,17 +148,18 @@ func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watc
 
 // GetService return the service instances in memory according to the service name.
 func (r *Registry) GetService(ctx context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
-	res, err := r.cli.GetService(vo.GetServiceParam{
+	res, err := r.cli.SelectInstances(vo.SelectInstancesParam{
 		ServiceName: serviceName,
+		HealthyOnly: true,
 	})
 	if err != nil {
 		return nil, err
 	}
 	var items []*registry.ServiceInstance
-	for _, in := range res.Hosts {
+	for _, in := range res {
 		items = append(items, &registry.ServiceInstance{
 			ID:        in.InstanceId,
-			Name:      res.Name,
+			Name:      in.ServiceName,
 			Version:   in.Metadata["version"],
 			Metadata:  in.Metadata,
 			Endpoints: []string{fmt.Sprintf("%s://%s:%d", in.Metadata["kind"], in.Ip, in.Port)},
