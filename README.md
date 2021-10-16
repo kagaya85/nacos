@@ -2,6 +2,11 @@
 
 ---
 
+**NOTICE**: This repository has already be archived. Please check the links below
+
+* [config](https://github.com/go-kratos/kratos/tree/main/contrib/config/nacos)
+* [registry](https://github.com/go-kratos/kratos/tree/main/contrib/registry/nacos)
+
 **example**
 ```go
 sc := []constant.ServerConfig{
